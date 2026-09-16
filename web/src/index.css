@@ -1,0 +1,64 @@
+@import "tailwindcss";
+
+/**
+ * Sheetwright's visual identity: a light "paper" ground, hairline borders
+ * instead of shadows, sharp 6px corners, one rust accent used sparingly, and
+ * tabular monospace for every piece of data so the tables read like
+ * instrumentation. Deliberately unlike the dark/cyan house style.
+ */
+@theme {
+  --color-paper: #faf9f7;
+  --color-ink: #1c1917;
+  --color-line: #e7e5e4;
+  --color-line-strong: #d6d3d1;
+  --color-accent: #c2410c;
+  --color-accent-strong: #9a3412;
+  --color-accent-wash: #fef4ee;
+  --color-info: #57534e;
+  --color-warning: #b45309;
+  --color-warning-wash: #fefaf0;
+  --color-error: #b91c1c;
+  --color-error-wash: #fdf3f3;
+
+  --font-sans:
+    system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+
+  --radius-md: 6px;
+}
+
+/* Every data cell, column name, confidence figure and row number. */
+@utility data {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 0.8125rem;
+  letter-spacing: -0.005em;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-paper);
+  }
+
+  body {
+    margin: 0;
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    font-size: 0.875rem;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Accent focus rings everywhere, for keyboard users only. */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+
+  h1,
+  h2,
+  h3 {
+    font-weight: 600;
+    letter-spacing: 0;
+  }
+}

@@ -1,0 +1,50 @@
+# One command to a running stack: `docker compose up`.
+#
+# The "run it in 60 seconds" property is deliberate. A reviewer who cannot
+# start the project will not read it, and the LLM layer defaults to a mock so
+# no API key is needed.
+services:
+  db:
+    image: postgres:17-alpine
+    environment:
+      POSTGRES_USER: sheetwright
+      POSTGRES_PASSWORD: sheetwright
+      POSTGRES_DB: sheetwright
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      # The api and worker wait on this, so neither races an unready database.
+      test: ["CMD-SHELL", "pg_isready -U sheetwright -d sheetwright"]
+      interval: 2s
+      timeout: 3s
+      retries: 20
+
+  api:
+    build: .
+    command: >
+      sh -c "alembic upgrade head &&
+             uvicorn api.main:app --host 0.0.0.0 --port 8000"
+    environment:
+      DATABASE_URL: postgresql+psycopg://sheetwright:sheetwright@db:5432/sheetwright
+      SECRET_KEY: dev-only-insecure-change-me
+      LLM_PROVIDER: mock
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+    volumes: [".:/app"]
+
+  worker:
+    build: .
+    # The worker does not run migrations — one migrator avoids two processes
+    # racing for the Alembic version lock on a cold start.
+    command: python -m worker.run
+    environment:
+      DATABASE_URL: postgresql+psycopg://sheetwright:sheetwright@db:5432/sheetwright
+      LLM_PROVIDER: mock
+    depends_on:
+      db: {condition: service_healthy}
+      api: {condition: service_started}
+    volumes: [".:/app"]
+
+volumes:
+  pgdata:
