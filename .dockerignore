@@ -1,0 +1,14 @@
+# Keep the build context small. Without this, COPY . . drags in the local
+# virtualenv and node_modules — hundreds of megabytes that the image neither
+# needs nor should contain (they are built for the host, not the container).
+.venv/
+web/node_modules/
+web/dist/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.git/
+.uploads/
+.env
+*.md
+!README.md

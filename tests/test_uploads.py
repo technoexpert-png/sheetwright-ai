@@ -16,7 +16,9 @@ from db.base import SessionFactory
 from worker import queue
 from worker.pipeline import PermanentFailure, process
 
-SAMPLES = Path("/Users/williamsarris/Projects/technoexpert-ingest/samples")
+# Resolved from this file, not an absolute path: the suite must run from a
+# fresh clone with no assumptions about where the repo sits on disk.
+SAMPLES = Path(__file__).resolve().parent.parent / "samples"
 
 
 def drain(max_jobs: int = 5) -> int:
