@@ -68,13 +68,47 @@ export interface SchemaOut {
   fields: SchemaField[];
 }
 
+/**
+ * A field as `GET /schemas/templates` returns it. A template is not a stored
+ * schema, so it carries no `position`: order in the list is the order, and the
+ * server assigns positions when the template is copied.
+ */
+export interface SchemaTemplateField {
+  name: string;
+  field_type: FieldType;
+  required: boolean;
+  description: string | null;
+  position?: number;
+}
+
 export interface SchemaTemplate {
   name: string;
   description: string | null;
-  fields: SchemaField[];
+  fields: SchemaTemplateField[];
 }
 
 export type SchemaTemplateMap = Record<string, SchemaTemplate>;
+
+/**
+ * Body for `POST /schemas` and `PUT /schemas/{id}`. Deliberately not a
+ * `SchemaOut`: the server owns `id`, `from_template`, and the defaults behind
+ * every optional member here, so echoing a full SchemaOut back would claim
+ * ownership the client does not have.
+ */
+export interface SchemaFieldWrite {
+  name: string;
+  field_type: FieldType;
+  required?: boolean;
+  description?: string;
+  position?: number;
+}
+
+export interface SchemaWrite {
+  name: string;
+  description?: string;
+  /** At least one field; the server answers 422 for an empty list. */
+  fields: SchemaFieldWrite[];
+}
 
 /* ---------------------------------------------------------------- Uploads */
 

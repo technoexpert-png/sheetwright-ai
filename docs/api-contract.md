@@ -20,10 +20,31 @@ SessionOut = { authenticated: bool, anonymous: bool,
 
 ## Schemas
 ```
-GET /schemas            200 -> SchemaOut[]
-GET /schemas/templates  200 -> { key: {name, description, fields[]} }   # public
-GET /schemas/{id}       200 -> SchemaOut | 404
+GET    /schemas                     200 -> SchemaOut[]
+GET    /schemas/templates           200 -> { key: {...} }        # public, no session
+GET    /schemas/{id}                200 -> SchemaOut | 404
+POST   /schemas                     201 -> SchemaOut             # SchemaWrite body
+POST   /schemas/from-template/{key} 201 -> SchemaOut             # copy a template
+PUT    /schemas/{id}                200 -> SchemaOut             # SchemaWrite; fields replaced wholesale
+DELETE /schemas/{id}                204
 ```
+```jsonc
+SchemaWrite = {
+  name: string,                    // unique within the org
+  description?: string,
+  fields: [{ name, field_type, required?, description?, position? }]   // >= 1
+}
+```
+Errors: `409` duplicate name, `422` invalid (no fields, duplicate or empty
+field name, unknown `field_type`), `404` unknown id or template.
+
+`PUT` replaces the field list wholesale rather than patching it - a partial
+field update has no obvious merge semantics when fields are reordered or
+renamed, and the editor always holds the whole list anyway.
+
+Deleting a schema does **not** delete uploads converted against it: the upload
+keeps `schema_id = null` and each stored result carries its own schema
+snapshot, so historical output stays readable and exportable.
 ```jsonc
 SchemaOut = { id, name, description, from_template,
               fields: [{name, field_type, required, description, position}] }

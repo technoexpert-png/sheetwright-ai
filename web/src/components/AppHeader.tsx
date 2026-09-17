@@ -29,6 +29,9 @@ export function AppHeader() {
           <NavLink to="/" end className={navClass}>
             Upload
           </NavLink>
+          <NavLink to="/schemas" className={navClass}>
+            Schemas
+          </NavLink>
           <NavLink to="/uploads" className={navClass}>
             History
           </NavLink>

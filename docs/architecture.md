@@ -173,8 +173,6 @@ four-method interface.
 
 Listed because a reviewer will find them anyway:
 
-- **No schema CRUD endpoint.** Templates are seeded per org; you cannot yet
-  create or edit one via the API, so "user-defined schemas" is half-delivered.
 - **The trial reaper is not scheduled.** The model, the constraint, and
   `delete_prefix` all support it; nothing runs it.
 - **Rate limiting is absent.** Trials are capped by upload count, which is not

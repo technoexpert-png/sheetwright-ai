@@ -104,6 +104,15 @@ independent signals:
   This is how `Cell #` still resolves to `phone`. Evidence is capped for
   `string` fields so free text can never win on content alone.
 
+**Where the mock stops.** It is a heuristic, not a reader. A `string` field
+whose name and description share no vocabulary with the header cannot be
+matched — define a field called `attendee` and the mock will leave the
+`Contact` column unmapped rather than guess, because string content evidence is
+capped so free text can never win on content alone. That is the honest
+behaviour (the upload lands in `needs_review` with the field flagged, and the
+override UI is right there), and it is the clearest case for the real model,
+which infers that an attendee is a contact.
+
 The real path is code-complete: structured output via tool-use (no free-text
 parsing), confidences clamped, and a **hallucination guard** that discards any
 `source_column` not verbatim in the real header list — a model naming a
@@ -185,6 +194,9 @@ All routes are under `/api`. Full contract:
 
 | | |
 |---|---|
+| `GET POST /api/schemas` | list, or define a target schema |
+| `PUT DELETE /api/schemas/{id}` | edit or remove one. Deleting never destroys converted uploads |
+| `POST /api/schemas/from-template/{key}` | copy a starter template into your org |
 | `POST /api/uploads` | multipart file + optional `schema_id` → `202` |
 | `GET /api/uploads/{id}` | status: `pending` → `running` → `needs_review` / `complete` / `error` |
 | `GET /api/uploads/{id}/result` | mapping, rows, diagnostics (`409` while running, `422` if failed) |
@@ -217,8 +229,6 @@ design) · [**HOW_THIS_WAS_BUILT.md**](HOW_THIS_WAS_BUILT.md)
 
 ## What I'd do next
 
-- **Schema CRUD.** Templates are seeded per org, but there's no endpoint to
-  create a schema yet, so "user-defined" is only half true.
 - **Trial reaper** as a scheduled job — the model and constraint support it;
   nothing runs it.
 - **Fetch-the-page-containing-row-N**, so a diagnostic referencing row 4,000 can

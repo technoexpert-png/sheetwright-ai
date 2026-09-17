@@ -168,3 +168,57 @@ class MappingOverrideRequest(BaseModel):
     """`{field_name: source_column | null}` — null means deliberately unmapped."""
 
     mapping: dict[str, str | None]
+
+
+# ── schema authoring ─────────────────────────────────────────────────────────
+
+class FieldWrite(BaseModel):
+    """One target field as submitted by the editor.
+
+    `position` is optional because the client sends fields in display order and
+    the server derives position from that order. Accepting an explicit position
+    as well would let the two disagree.
+    """
+
+    name: str = Field(min_length=1, max_length=80)
+    field_type: str = "string"
+    required: bool = False
+    description: str | None = Field(default=None, max_length=2000)
+    position: int | None = None
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if not v:
+            raise ValueError("field name cannot be blank")
+        return v
+
+
+class SchemaWrite(BaseModel):
+    name: str = Field(min_length=1, max_length=120)
+    description: str | None = Field(default=None, max_length=2000)
+    fields: list[FieldWrite] = Field(min_length=1)
+
+    @field_validator("name")
+    @classmethod
+    def clean_name(cls, v: str) -> str:
+        v = " ".join(v.split())
+        if not v:
+            raise ValueError("schema name cannot be blank")
+        return v
+
+    @field_validator("fields")
+    @classmethod
+    def no_duplicate_field_names(cls, v: list[FieldWrite]) -> list[FieldWrite]:
+        # Case-insensitive, because two fields differing only in case would be
+        # indistinguishable to anyone reading the exported header row.
+        seen: dict[str, str] = {}
+        for f in v:
+            key = f.name.casefold()
+            if key in seen:
+                raise ValueError(
+                    f"duplicate field name {f.name!r} (already defined as {seen[key]!r})"
+                )
+            seen[key] = f.name
+        return v

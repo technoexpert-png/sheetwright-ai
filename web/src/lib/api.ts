@@ -11,6 +11,7 @@ import type {
   ResultOut,
   SchemaOut,
   SchemaTemplateMap,
+  SchemaWrite,
   SessionOut,
   SignupBody,
   UploadOut,
@@ -55,12 +56,27 @@ function errorBody(payload: unknown): Record<string, unknown> {
   return payload;
 }
 
+/**
+ * FastAPI's request-validation 422 is a list of `{loc, msg}` entries, not a
+ * sentence. Without this a schema the server rejects would surface as the
+ * useless "Request failed (HTTP 422)".
+ */
+function validationMessage(payload: unknown): string | null {
+  if (!isRecord(payload) || !Array.isArray(payload.detail)) return null;
+  const messages = payload.detail
+    .map((item) => (isRecord(item) && typeof item.msg === "string" ? item.msg : null))
+    .filter((message): message is string => Boolean(message));
+  return messages.length ? messages.join("; ") : null;
+}
+
 function errorMessage(status: number, payload: unknown): string {
   const body = errorBody(payload);
   for (const key of ["message", "error", "detail"]) {
     const value = body[key];
     if (typeof value === "string" && value.trim()) return value;
   }
+  const validation = validationMessage(payload);
+  if (validation) return validation;
   // A 5xx with no JSON body is almost always the API being down or the dev
   // proxy failing to connect, so name that rather than showing a bare code.
   if (status >= 500) {
@@ -91,6 +107,15 @@ export function failureDetail(
   const read = (key: string) =>
     typeof body[key] === "string" ? (body[key] as string) : null;
   return { error: read("error"), required_action: read("required_action") };
+}
+
+/**
+ * A 409 from `/schemas` can only mean "that name is taken" (it is the one
+ * uniqueness constraint in the contract), so the editor can attach the message
+ * to the name input instead of showing a generic banner.
+ */
+export function isDuplicateName(error: unknown): boolean {
+  return error instanceof ApiError && error.status === 409;
 }
 
 async function request(path: string, init: RequestInit = {}): Promise<Response> {
@@ -146,6 +171,28 @@ export const schemas = {
   list: () => getJson<SchemaOut[]>("/schemas"),
   templates: () => getJson<SchemaTemplateMap>("/schemas/templates"),
   get: (id: string) => getJson<SchemaOut>(`/schemas/${encodeURIComponent(id)}`),
+
+  create: (body: SchemaWrite) => sendJson<SchemaOut>("/schemas", "POST", body),
+
+  /** Copies a named template into the org; the server picks the new id. */
+  createFromTemplate: (key: string) =>
+    sendJson<SchemaOut>(`/schemas/from-template/${encodeURIComponent(key)}`, "POST"),
+
+  /**
+   * PUT replaces the field list wholesale (contract, "Schemas"): once fields
+   * can be reordered or renamed there is no unambiguous merge for a partial
+   * update, and the editor always holds the complete list anyway.
+   */
+  update: (id: string, body: SchemaWrite) =>
+    sendJson<SchemaOut>(`/schemas/${encodeURIComponent(id)}`, "PUT", body),
+
+  /**
+   * 204, no body. Uploads converted against this schema keep working: each
+   * stored result carries its own schema snapshot.
+   */
+  remove: async (id: string) => {
+    await request(`/schemas/${encodeURIComponent(id)}`, { method: "DELETE" });
+  },
 };
 
 /* ---------------------------------------------------------------- Uploads */
