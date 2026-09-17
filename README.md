@@ -15,10 +15,6 @@ exports have merged cells, title rows above the headers, columns called
 low-confidence mappings are flagged for review, every value carries its
 provenance, and anything questionable becomes a structured diagnostic.
 
-> Built with Claude Code. How, and what that cost, is documented in
-> **[HOW_THIS_WAS_BUILT.md](HOW_THIS_WAS_BUILT.md)** — including the bugs the
-> process caught.
-
 ---
 
 ## Run it in 60 seconds
@@ -225,8 +221,10 @@ tests/    115 tests against real Postgres
 ```
 
 Further reading:
-[**ARCHITECTURE.md**](docs/architecture.md) (how it runs in production, and the
-same design costed out on AWS) · [**HOW_THIS_WAS_BUILT.md**](HOW_THIS_WAS_BUILT.md)
+[**ARCHITECTURE.md**](docs/architecture.md) — how it runs in production, and the
+same design costed out on AWS ·
+[**engineering-notes.md**](docs/engineering-notes.md) — defects found while
+building this, and what each one changed.
 
 ---
 
