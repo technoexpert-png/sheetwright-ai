@@ -1,16 +1,20 @@
 # API contract (Phase 1)
 
-Frozen so the front end and back end can be built in parallel. All routes are prefixed **`/api`** (so they cannot collide with the SPA's
-own client-side routes). Cookie auth (`sw_session`, httpOnly); every request
-sends credentials. `/health` and `/ready` stay at the root for platform probes.
+Frozen so the front end and back end can be built in parallel.
+
+Every path below is written in full, including the **`/api`** prefix that keeps
+these routes from colliding with the SPA's own client-side routes. Without it a
+browser navigating to `/uploads` would be answered with JSON. Auth is a cookie
+(`sw_session`, httpOnly), so every request must send credentials. `/health` and
+`/ready` stay at the root for platform probes.
 
 ## Session
 ```
-POST /auth/trial        201 -> SessionOut          # anonymous, no body
-POST /auth/signup       201 -> SessionOut          # {org_name, email, password}
-POST /auth/login        200 -> SessionOut          # {email, password, org_id?}
-POST /auth/logout       204
-GET  /auth/me           200 -> SessionOut          # authenticated:false when logged out
+POST /api/auth/trial        201 -> SessionOut          # anonymous, no body
+POST /api/auth/signup       201 -> SessionOut          # {org_name, email, password}
+POST /api/auth/login        200 -> SessionOut          # {email, password, org_id?}
+POST /api/auth/logout       204
+GET  /api/auth/me           200 -> SessionOut          # authenticated:false when logged out
 ```
 ```jsonc
 SessionOut = { authenticated: bool, anonymous: bool,
@@ -20,13 +24,13 @@ SessionOut = { authenticated: bool, anonymous: bool,
 
 ## Schemas
 ```
-GET    /schemas                     200 -> SchemaOut[]
-GET    /schemas/templates           200 -> { key: {...} }        # public, no session
-GET    /schemas/{id}                200 -> SchemaOut | 404
-POST   /schemas                     201 -> SchemaOut             # SchemaWrite body
-POST   /schemas/from-template/{key} 201 -> SchemaOut             # copy a template
-PUT    /schemas/{id}                200 -> SchemaOut             # SchemaWrite; fields replaced wholesale
-DELETE /schemas/{id}                204
+GET    /api/schemas                     200 -> SchemaOut[]
+GET    /api/schemas/templates           200 -> { key: {...} }        # public, no session
+GET    /api/schemas/{id}                200 -> SchemaOut | 404
+POST   /api/schemas                     201 -> SchemaOut             # SchemaWrite body
+POST   /api/schemas/from-template/{key} 201 -> SchemaOut             # copy a template
+PUT    /api/schemas/{id}                200 -> SchemaOut             # SchemaWrite; fields replaced wholesale
+DELETE /api/schemas/{id}                204
 ```
 ```jsonc
 SchemaWrite = {
@@ -53,14 +57,14 @@ SchemaOut = { id, name, description, from_template,
 
 ## Uploads
 ```
-POST /uploads                      202 -> UploadOut   # multipart: file, schema_id?
+POST /api/uploads                      202 -> UploadOut   # multipart: file, schema_id?
                                                       # creates a trial session if none;
                                                       # schema_id optional -> org's first schema
-GET  /uploads                      200 -> UploadOut[]
-GET  /uploads/{id}                 200 -> UploadOut | 404
-GET  /uploads/{id}/result          200 -> ResultOut | 404 | 409 (still processing)
-PUT  /uploads/{id}/mapping         202 -> UploadOut   # {mapping: {field: source_column|null}}
-GET  /uploads/{id}/export?format=  200 -> file        # csv | xlsx | json
+GET  /api/uploads                      200 -> UploadOut[]
+GET  /api/uploads/{id}                 200 -> UploadOut | 404
+GET  /api/uploads/{id}/result          200 -> ResultOut | 404 | 409 (still processing)
+PUT  /api/uploads/{id}/mapping         202 -> UploadOut   # {mapping: {field: source_column|null}}
+GET  /api/uploads/{id}/export?format=  200 -> file        # csv | xlsx | json
 ```
 ```jsonc
 UploadOut = { id, filename, size_bytes, schema_id, status, stage,
@@ -89,12 +93,12 @@ ResultOut = {
 }
 ```
 
-`GET /uploads/{id}/result` accepts `?limit=` & `?offset=` for `rows`
+`GET /api/uploads/{id}/result` accepts `?limit=` & `?offset=` for `rows`
 (default 100). `summary` always reflects the whole result, not the page.
 
 ## Status semantics
 - `needs_review` — finished, but at least one mapping was ambiguous or a
   required field went unmapped. The UI should land the user on the review step.
-- `409` from `/result` — valid request, wrong time; body carries the live status.
-- `422` from `/result` — the upload failed; body carries `error` and
+- `409` from `/api/uploads/{id}/result` — valid request, wrong time; body carries the live status.
+- `422` from `/api/uploads/{id}/result` — the upload failed; body carries `error` and
   `required_action`.

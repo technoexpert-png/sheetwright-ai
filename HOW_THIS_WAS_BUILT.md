@@ -58,7 +58,7 @@ rewrites authoritative state do not get the same scrutiny:
 | Migrations work | The suite builds its schema via Alembic, not `create_all` |
 
 **No API key required, by design.** The mock mapper is the default and is
-genuinely useful, which is what lets 74 tests run offline. A test suite that
+genuinely useful, which is what lets all 115 tests run offline. A test suite that
 needs a paid API is a test suite that stops being run.
 
 ---
@@ -110,6 +110,29 @@ workaround was deleted.
 `Dept`→`department` and `CCY`→`currency` both fail a prefix test, because real
 headers abbreviate by dropping *interior* letters. Subsequence matching fixed
 both, and earned `Qty`→quantity and `Amt`→amount for free.
+
+### Three that only existed in production
+
+Deploying found bugs the test suite structurally could not, because each one
+lived in the gap between the app and the platform.
+
+**`boto3` was missing from `requirements.txt`.** Object storage would have
+failed at runtime and only in production, because development uses the
+filesystem backend and never imports it. Nothing in the suite covered the S3
+path with real credentials, so the import error had no way to surface locally.
+
+**The image had no front end.** The Dockerfile built the Python app and never
+ran the Vite build, so the first deploy came up as a healthy API serving no UI.
+Health checks passed the whole time — they check the API, and the API was fine.
+The fix was a multi-stage build plus a catch-all route that serves the SPA
+without shadowing `/api`.
+
+**The worker outran its own migrations.** On the first deploy it booted about
+six seconds before the API finished `alembic upgrade head` and spent those polls
+logging `relation "jobs" does not exist`. It recovered on its own — the tick
+loop catches and continues rather than dying — so this was cosmetic, but a
+fresh deploy dumping a traceback reads as a broken service. It now waits for its
+tables. It still does not migrate: racing the version lock is the worse failure.
 
 ### Two inherited regressions, now pinned
 

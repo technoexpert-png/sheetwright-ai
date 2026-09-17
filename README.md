@@ -221,14 +221,37 @@ worker/   Postgres-backed queue + the conversion pipeline
 db/       models + Alembic migrations
 web/      React 19 + Vite + Tailwind front end
 docs/     api contract, architecture, samples
-tests/    74 tests against real Postgres
+tests/    115 tests against real Postgres
 ```
 
 Further reading:
-[**ARCHITECTURE.md**](docs/architecture.md) (including the AWS deployment
-design) · [**HOW_THIS_WAS_BUILT.md**](HOW_THIS_WAS_BUILT.md)
+[**ARCHITECTURE.md**](docs/architecture.md) (how it runs in production, and the
+same design costed out on AWS) · [**HOW_THIS_WAS_BUILT.md**](HOW_THIS_WAS_BUILT.md)
 
 ---
+
+## Deployment
+
+Running at **[sheetwrightai.com](https://sheetwrightai.com)** on Fly.io: two
+processes from one image, Postgres on Supabase, files on Tigris. The image is
+multi-stage, so the SPA is baked in and served by the same origin as the API --
+no CORS in production.
+
+```bash
+fly deploy                      # builds the image, migrates, rolls both processes
+fly logs   --app sheetwright-ai
+fly status --app sheetwright-ai
+```
+
+Secrets live in `fly secrets`, never in `fly.toml`: `DATABASE_URL`, `SECRET_KEY`,
+and the Tigris credentials. `config.py` also accepts Fly's own `BUCKET_NAME` and
+`AWS_ENDPOINT_URL_S3`, so a bucket provisioned by `fly storage create` works
+without renaming anything.
+
+Two production behaviours worth knowing about, both covered in
+[ARCHITECTURE.md](docs/architecture.md): migrations run on the API process only
+and the worker waits for them, and `www` redirects to the bare domain while the
+`.fly.dev` hostname stays reachable for debugging.
 
 ## What I'd do next
 

@@ -93,23 +93,48 @@ read and written whole.
 
 ## Deployment
 
-### Current target: Fly.io
+### Running in production: Fly.io
+
+Live at **https://sheetwrightai.com**.
 
 Two processes from one image — the API and the worker differ only by entrypoint.
-Two images would be two things to keep in sync for no benefit at this size.
+Two images would be two things to keep in sync for no benefit at this size. The
+image is multi-stage: a Node stage builds the SPA, and the Python stage copies
+`web/dist` in and serves it, so the app and its API share one origin and there
+is no CORS in production.
 
 ```
-fly.toml         app = sheetwright-ai
+fly.toml         app = sheetwright-ai, region sjc
   [processes]
-    api    = uvicorn api.main:app --host 0.0.0.0 --port 8000
+    api    = sh -c 'alembic upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000'
     worker = python -m worker.run
 ```
 
-Postgres via **Fly Managed Postgres** (`fly mpg`) — unmanaged `fly pg` is
-deprecated. Object storage via **Tigris**, which is S3-compatible, so
-`core/storage.py` needs only `S3_ENDPOINT_URL` set. Migrations run on the API
-process at boot; the worker deliberately does not, so two processes never race
-the Alembic version lock on a cold start.
+**Postgres is Supabase**, reached over its session pooler on 5432, rather than
+Fly Managed Postgres: at this size a managed cluster costs more per month than
+the rest of the stack combined, and nothing here needs it.
+
+**Object storage is Tigris**, which is S3-compatible, so `core/storage.py` needs
+only an endpoint. Fly injects `BUCKET_NAME` and `AWS_ENDPOINT_URL_S3` when it
+provisions a bucket, and `config.py` accepts those as aliases for `S3_BUCKET`
+and `S3_ENDPOINT_URL`, so the platform's own variables work unedited.
+
+**Migrations run on the API process and only there**, so two processes never
+race the Alembic version lock. The worker boots alongside that migration and can
+therefore reach an empty database, so it waits for its tables to appear before
+polling — see `worker.run.wait_for_schema`. It waits rather than migrating
+because racing the lock is the worse failure, and it starts anyway after 120s
+because the tick loop already tolerates a missing table.
+
+**One API machine stays warm** (`min_machines_running = 1`). Measured on this
+app, a cold start cost 6.5s against 77ms warm, which is the difference between a
+link that works and a link that looks broken.
+
+**One canonical hostname.** `www` 301s to the bare domain, preserving path and
+query. The rule matches only an exact `www.<CANONICAL_HOST>`, so the `.fly.dev`
+hostname stays usable when a DNS change is wrong, and Fly's health checks —
+which arrive addressed to the machine, not the domain — are never redirected.
+`CANONICAL_HOST` is unset outside production, so dev and tests see no redirect.
 
 ### The same design on AWS
 
