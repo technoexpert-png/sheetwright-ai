@@ -20,6 +20,11 @@ class Settings(BaseSettings):
     app_name: str = "Sheetwright AI"
     environment: str = "development"
 
+    # The one hostname the site should be reachable at, e.g. "sheetwrightai.com".
+    # Empty disables the redirect, which is what dev, tests, and the bare
+    # *.fly.dev hostname want.
+    canonical_host: str = ""
+
     # Postgres. The default matches docker-compose so local dev needs no setup.
     database_url: str = "postgresql+psycopg://sheetwright:sheetwright@localhost:5432/sheetwright"
 

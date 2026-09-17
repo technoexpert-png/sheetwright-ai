@@ -10,8 +10,9 @@ from __future__ import annotations
 import logging
 from pathlib import Path
 
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import RedirectResponse
 
 from api import routes_auth, routes_schemas, routes_uploads
 from config import settings
@@ -37,6 +38,24 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def canonical_host(request: Request, call_next):
+    """Send www to the bare domain so the site has one address, not two.
+
+    Deliberately narrow: only `www.<canonical_host>` is redirected. The
+    *.fly.dev hostname keeps working for debugging, and the platform's health
+    checks -- which arrive with an internal Host header -- are never touched.
+    """
+    host_setting = settings().canonical_host
+    if host_setting:
+        host = request.headers.get("host", "").split(":")[0].lower()
+        if host == f"www.{host_setting}":
+            target = request.url.replace(scheme="https", netloc=host_setting)
+            return RedirectResponse(str(target), status_code=301)
+    return await call_next(request)
+
 
 # Everything the browser calls lives under /api. Without the prefix, the API's
 # `/uploads` collides with the SPA's own `/uploads` history route: a document

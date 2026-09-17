@@ -10,6 +10,7 @@ primary_region = "sjc"
   ENVIRONMENT = "production"
   LLM_PROVIDER = "mock"        # no API key needed; set to "anthropic" + a secret to switch
   STORAGE_BACKEND = "s3"
+  CANONICAL_HOST = "sheetwrightai.com"   # www redirects here; *.fly.dev stays reachable
 
 [processes]
   # Migrations run here and only here, so two processes never race the Alembic
