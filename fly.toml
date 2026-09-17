@@ -1,0 +1,51 @@
+# Two processes from one image: the api and the worker differ only by
+# entrypoint. Two images would be two things to keep in sync for no benefit.
+app = "sheetwright-ai"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  ENVIRONMENT = "production"
+  LLM_PROVIDER = "mock"        # no API key needed; set to "anthropic" + a secret to switch
+  STORAGE_BACKEND = "s3"
+
+[processes]
+  # Migrations run here and only here, so two processes never race the Alembic
+  # version lock on a cold start. The worker boots at the same time and waits
+  # for the schema to appear rather than polling a table that does not exist.
+  api    = "sh -c 'alembic upgrade head && uvicorn api.main:app --host 0.0.0.0 --port 8000'"
+  worker = "python -m worker.run"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0      # a demo: let it sleep when nobody is looking
+  processes = ["api"]
+
+  [http_service.concurrency]
+    type = "requests"
+    soft_limit = 40
+    hard_limit = 80
+
+# Liveness only — deliberately does not touch Postgres, so a slow query cannot
+# convince the platform the process is dead and restart it mid-conversion.
+[[http_service.checks]]
+  grace_period = "10s"
+  interval = "30s"
+  method = "GET"
+  path = "/health"
+  timeout = "5s"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  processes = ["api"]
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
+  processes = ["worker"]

@@ -8,8 +8,9 @@ Parsing, mapping, and normalization live in `core/`, and background work in
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from api import routes_auth, routes_schemas, routes_uploads
@@ -68,3 +69,41 @@ def ready() -> dict[str, str]:
     except Exception as exc:  # noqa: BLE001
         from fastapi import HTTPException
         raise HTTPException(status_code=503, detail=f"database unavailable: {exc}")
+
+
+# ── serving the single-page app ──────────────────────────────────────────────
+# Registered last on purpose. FastAPI matches routes in registration order, so
+# every API route, /health, /ready and /docs are already claimed by the time
+# the catch-all below is considered.
+WEB_DIST = Path(__file__).resolve().parent.parent / "web" / "dist"
+
+if WEB_DIST.is_dir():
+    from fastapi.responses import FileResponse
+    from fastapi.staticfiles import StaticFiles
+
+    app.mount(
+        "/assets", StaticFiles(directory=WEB_DIST / "assets"), name="assets"
+    )
+
+    @app.get("/{full_path:path}", include_in_schema=False)
+    def serve_spa(full_path: str) -> FileResponse:
+        """Serve a real file if one exists, otherwise the app shell.
+
+        Client-side routes like /schemas/new have no file behind them, so a
+        refresh or a pasted link must still return index.html and let the
+        router resolve it.
+        """
+        # An unknown /api path is a missing endpoint, not a page. Returning the
+        # app shell there would hand a caller HTML with a 200 and turn a typo
+        # into a confusing JSON parse error.
+        if full_path.startswith("api/"):
+            raise HTTPException(status_code=404, detail="Unknown endpoint.")
+
+        candidate = (WEB_DIST / full_path).resolve()
+        if full_path and candidate.is_file() and candidate.is_relative_to(WEB_DIST):
+            return FileResponse(candidate)
+        return FileResponse(WEB_DIST / "index.html")
+else:  # pragma: no cover - only in a dev checkout with no built front end
+    logging.getLogger(__name__).info(
+        "web/dist not found; serving the API only (run `npm run build` in web/)"
+    )

@@ -10,12 +10,13 @@ from __future__ import annotations
 from datetime import timedelta
 
 from sqlalchemy import func
+from sqlalchemy.exc import OperationalError
 
 import pytest
 
 from db.base import SessionFactory
 from db.models import Job, JobState, Org, Upload
-from worker import queue
+from worker import queue, run
 
 
 @pytest.fixture
@@ -211,3 +212,46 @@ def test_depth_reports_by_state(org_and_uploads):
     d = queue.depth(db)
     assert d.get("running") == 1
     assert d.get("queued") == 2
+
+
+class TestSchemaWait:
+    """The worker boots beside the migration that creates its tables.
+
+    Regression: on the first Fly deploy the worker started ~6s before the api
+    finished `alembic upgrade head` and spent those polls logging
+    `relation "jobs" does not exist`. It self-healed, but a fresh deploy should
+    not dump a traceback into the logs to get there.
+    """
+
+    def test_returns_immediately_when_schema_exists(self):
+        # The test database is migrated, so this must not block at all.
+        assert run.wait_for_schema(timeout=0) is True
+
+    def test_probe_sees_the_migrated_schema(self):
+        assert run._schema_present() is True
+
+    def test_gives_up_and_starts_anyway(self, monkeypatch):
+        """A migration that never lands delays the worker; it must not hang."""
+        monkeypatch.setattr(run, "_schema_present", lambda: False)
+        assert run.wait_for_schema(timeout=0) is False
+
+    def test_waits_then_proceeds_once_the_table_appears(self, monkeypatch):
+        """The point of the fix: poll through absence, return on arrival."""
+        calls = {"n": 0}
+
+        def appears_on_third_look() -> bool:
+            calls["n"] += 1
+            return calls["n"] >= 3
+
+        monkeypatch.setattr(run, "_schema_present", appears_on_third_look)
+        monkeypatch.setattr(run.time, "sleep", lambda _s: None)
+        assert run.wait_for_schema(timeout=30) is True
+        assert calls["n"] == 3
+
+    def test_unreachable_database_counts_as_not_ready(self, monkeypatch):
+        """A cold database is a wait, not a crash."""
+        def refuse(*_a, **_k):
+            raise OperationalError("connect", {}, Exception("refused"))
+
+        monkeypatch.setattr(run.engine, "connect", refuse)
+        assert run._schema_present() is False

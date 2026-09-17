@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from functools import lru_cache
 
+from pydantic import AliasChoices, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -36,8 +37,16 @@ class Settings(BaseSettings):
     # Uploads. Local filesystem in dev; S3-compatible (Fly Tigris / AWS) in prod.
     storage_backend: str = "local"          # "local" | "s3"
     storage_local_dir: str = "./.uploads"
-    s3_bucket: str | None = None
-    s3_endpoint_url: str | None = None
+    # Accept both our own names and the AWS-style ones Fly/Tigris inject, so a
+    # provisioned bucket works with no manual re-mapping. boto3 reads
+    # AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY / AWS_REGION itself.
+    s3_bucket: str | None = Field(
+        default=None, validation_alias=AliasChoices("S3_BUCKET", "BUCKET_NAME")
+    )
+    s3_endpoint_url: str | None = Field(
+        default=None,
+        validation_alias=AliasChoices("S3_ENDPOINT_URL", "AWS_ENDPOINT_URL_S3"),
+    )
 
     max_upload_bytes: int = 10 * 1024 * 1024
 

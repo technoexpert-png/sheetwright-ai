@@ -17,8 +17,11 @@ import sys
 import time
 from types import FrameType
 
+from sqlalchemy import text
+from sqlalchemy.exc import OperationalError
+
 from config import settings
-from db.base import SessionFactory
+from db.base import SessionFactory, engine
 from worker import queue
 from worker.pipeline import PermanentFailure, process
 
@@ -28,6 +31,49 @@ logger = logging.getLogger("worker")
 # How often to sweep for jobs abandoned by dead workers. Rare, because it is a
 # recovery path, not a hot one.
 RECLAIM_EVERY_SECONDS = 60
+
+# On a fresh deploy the api process runs `alembic upgrade head` while the worker
+# boots beside it, so the worker can reach an empty database. It deliberately
+# does not migrate itself -- two processes racing the Alembic version lock is a
+# worse problem than waiting -- so it waits for the schema to appear instead of
+# spending its first polls logging "relation \"jobs\" does not exist".
+SCHEMA_WAIT_SECONDS = 120.0
+
+
+def _schema_present() -> bool:
+    """True once the jobs table exists.
+
+    A database that is not accepting connections yet counts as "not ready" and
+    not as an error: on a cold start it is the same wait for the same reason.
+    """
+    try:
+        with engine.connect() as conn:
+            return conn.scalar(text("SELECT to_regclass('public.jobs')")) is not None
+    except OperationalError:
+        return False
+
+
+def wait_for_schema(timeout: float = SCHEMA_WAIT_SECONDS) -> bool:
+    """Block until migrations have created the schema. False if they never did.
+
+    Falling through on timeout rather than exiting is deliberate. The tick loop
+    already survives a missing table, so a migration that is merely slow should
+    delay the worker, not crash-loop the machine.
+    """
+    deadline = time.monotonic() + timeout
+    waited = False
+    while True:
+        if _schema_present():
+            if waited:
+                logger.info("schema ready")
+            return True
+        if time.monotonic() >= deadline:
+            logger.warning("schema still missing after %.0fs; starting anyway", timeout)
+            return False
+        if not waited:
+            logger.info("waiting for migrations to create the schema")
+            waited = True
+        time.sleep(1.0)
 
 
 class Runner:
@@ -49,6 +95,7 @@ class Runner:
     def run(self) -> int:
         signal.signal(signal.SIGTERM, self.request_stop)
         signal.signal(signal.SIGINT, self.request_stop)
+        wait_for_schema()
         logger.info("worker %s started (poll %.1fs)", self.worker_id,
                     settings().worker_poll_seconds)
 
