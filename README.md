@@ -1,5 +1,8 @@
 # Sheetwright AI
 
+**Live at [sheetwrightai.com](https://sheetwrightai.com)** — no signup needed to
+try it; an anonymous trial starts on your first upload.
+
 **Convert an arbitrary, badly-formatted spreadsheet into a schema you define.**
 Sheetwright reads any CSV or XLSX, uses an LLM to work out which of its columns
 maps to which of your fields, and then shows you every decision it made —
