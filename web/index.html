@@ -12,5 +12,16 @@
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
+
+    <!-- Support assistant. Loaded from the page rather than from React so it
+         survives client-side navigation and renders even if the app fails to
+         boot -- the moment a visitor most wants to ask something. The key is
+         publishable by design; what restricts it is the origin allowlist on
+         the Askwright side, not secrecy. -->
+    <script
+      src="https://askwrightai.com/widget.js"
+      data-key="pk_Em53Mjza4Dw_jYgaNV9Vos2ZBXpk5giT"
+      defer
+    ></script>
   </body>
 </html>
