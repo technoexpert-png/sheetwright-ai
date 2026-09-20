@@ -37,7 +37,7 @@ def spec_from_db(schema: models.TargetSchema) -> TargetSchemaSpec:
 
 
 def spec_to_snapshot(spec: TargetSchemaSpec) -> dict:
-    """Serialise a spec for storage on a Result.
+    """Serialize a spec for storage on a Result.
 
     Plain JSON rather than a foreign key: the point is to freeze what the
     conversion actually used, so it must survive the schema being edited or

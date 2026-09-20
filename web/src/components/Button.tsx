@@ -22,8 +22,8 @@ export function Button({ variant = "secondary", className = "", ...rest }: Props
       className={[
         "inline-flex items-center justify-center gap-2 rounded-md border px-3 py-1.5",
         "text-sm font-medium transition-colors",
-        // Disabled buttons drop their variant colour entirely rather than
-        // fading it, so a greyed-out primary never reads as a pale accent.
+        // Disabled buttons drop their variant color entirely rather than
+        // fading it, so a grayed-out primary never reads as a pale accent.
         "disabled:cursor-not-allowed disabled:border-line disabled:bg-paper disabled:text-info/60",
         VARIANTS[variant],
         className,

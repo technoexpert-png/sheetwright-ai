@@ -61,7 +61,7 @@ class LocalStorage:
 
     def _path(self, key: str) -> Path:
         p = (self.root / key).resolve()
-        # Defence in depth: even with safe_filename, verify the resolved path
+        # Defense in depth: even with safe_filename, verify the resolved path
         # is still inside root before writing to it.
         if not p.is_relative_to(self.root):
             raise ValueError(f"key escapes storage root: {key!r}")

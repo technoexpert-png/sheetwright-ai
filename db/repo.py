@@ -45,7 +45,7 @@ T = TypeVar("T")
 
 
 class TenantScope:
-    """All reads and writes for one organisation."""
+    """All reads and writes for one organization."""
 
     def __init__(self, db: DbSession, org_id: uuid.UUID) -> None:
         self.db = db

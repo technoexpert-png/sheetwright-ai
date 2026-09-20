@@ -108,7 +108,7 @@ whose name and description share no vocabulary with the header cannot be
 matched — define a field called `attendee` and the mock will leave the
 `Contact` column unmapped rather than guess, because string content evidence is
 capped so free text can never win on content alone. That is the honest
-behaviour (the upload lands in `needs_review` with the field flagged, and the
+behavior (the upload lands in `needs_review` with the field flagged, and the
 override UI is right there), and it is the clearest case for the real model,
 which infers that an attendee is a contact.
 
@@ -140,7 +140,7 @@ isn't left to discipline:
 - Another tenant's row reads as **absent, not forbidden** — `404`, never `403`,
   because a `403` confirms the id exists.
 
-### Anonymous trials are real, expiring organisations
+### Anonymous trials are real, expiring organizations
 
 Not a nullable `org_id`. A trial *is* an `Org` with `is_trial=True` and an
 `expires_at` (with a `CHECK` constraint, since a trial without an expiry would
@@ -165,7 +165,7 @@ asserted in a comment. Revisit when throughput outgrows one Postgres.
 
 ### "No column" and "empty cell" are different facts
 
-Both serialise a `null`. They mean completely different things and imply
+Both serialize a `null`. They mean completely different things and imply
 different fixes, so they're never collapsed:
 
 ```jsonc
@@ -246,7 +246,7 @@ and the Tigris credentials. `config.py` also accepts Fly's own `BUCKET_NAME` and
 `AWS_ENDPOINT_URL_S3`, so a bucket provisioned by `fly storage create` works
 without renaming anything.
 
-Two production behaviours worth knowing about, both covered in
+Two production behaviors worth knowing about, both covered in
 [ARCHITECTURE.md](docs/architecture.md): migrations run on the API process only
 and the worker waits for them, and `www` redirects to the bare domain while the
 `.fly.dev` hostname stays reachable for debugging.
@@ -261,6 +261,6 @@ and the worker waits for them, and `www` redirects to the bare domain while the
   skip the model entirely.
 - **Streaming parse** for files too large to hold in memory.
 
-## Licence
+## License
 
 MIT — see [LICENSE](LICENSE).

@@ -96,7 +96,7 @@ def claim(db: DbSession, worker_id: str) -> Job | None:
 
     Must run inside a transaction. SKIP LOCKED makes this safe for N workers:
     each skips rows another worker already holds instead of queueing behind
-    them, so throughput scales with workers rather than serialising.
+    them, so throughput scales with workers rather than serializing.
     """
     job = db.scalars(
         select(Job)

@@ -63,9 +63,9 @@ export function LoginPage() {
           onChange={(event) => setPassword(event.target.value)}
         />
         <TextField
-          label="Organisation id (optional)"
+          label="Organization id (optional)"
           value={orgId}
-          hint="Only needed if your email belongs to more than one organisation."
+          hint="Only needed if your email belongs to more than one organization."
           onChange={(event) => setOrgId(event.target.value)}
         />
         {error && <ErrorState title="Could not log in" message={error} />}

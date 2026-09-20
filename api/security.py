@@ -59,7 +59,7 @@ def sign_session_id(session_id: uuid.UUID) -> str:
 def unsign_session_id(token: str) -> uuid.UUID | None:
     """Return the session id, or None if the cookie is forged or stale.
 
-    The signature carries its own max age as defence in depth; the Session row
+    The signature carries its own max age as defense in depth; the Session row
     also has `expires_at`, and both are checked. A signature that merely looks
     valid is not enough to be logged in.
     """

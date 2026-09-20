@@ -37,7 +37,7 @@ export function SignupPage() {
       intro={
         fromTrial
           ? "Your trial workspace becomes this account — the uploads and mappings you have already made are kept."
-          : "One account per organisation; you can invite colleagues later."
+          : "One account per organization; you can invite colleagues later."
       }
       footer={
         <>
@@ -51,7 +51,7 @@ export function SignupPage() {
     >
       <form className="space-y-4" onSubmit={submit}>
         <TextField
-          label="Organisation name"
+          label="Organization name"
           value={orgName}
           autoComplete="organization"
           required

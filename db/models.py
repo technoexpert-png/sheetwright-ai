@@ -249,7 +249,7 @@ class Upload(TimestampMixin, Base):
     # Stored on the upload rather than inferred from the previous Result,
     # because "this is what the machine decided" and "this is what the human
     # told us to use" are different facts and conflating them makes the
-    # worker's behaviour depend on how you read a flag. When present, the
+    # worker's behavior depend on how you read a flag. When present, the
     # worker uses it verbatim and skips the mapper entirely.
     override_mapping: Mapped[dict | None] = mapped_column(JSONB)
 

@@ -4,7 +4,7 @@ Nothing in `core/` — parsing, column mapping, normalization — may import
 SQLAlchemy. A customer's schema lives in the database, but the pipeline only
 ever *reads* it: field names, types, which are required. Passing ORM instances
 inward would drag a session, a connection and a live transaction into every
-unit test, and make behaviour depend on lazy-loading order. So the API layer
+unit test, and make behavior depend on lazy-loading order. So the API layer
 converts DB rows into the immutable value objects below at the edge, and
 everything inward takes a `TargetSchemaSpec`.
 

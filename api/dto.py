@@ -31,7 +31,7 @@ class SignupRequest(BaseModel):
 class LoginRequest(BaseModel):
     email: EmailStr
     password: str
-    # Only needed when one email exists in more than one organisation.
+    # Only needed when one email exists in more than one organization.
     org_id: uuid.UUID | None = None
 
 

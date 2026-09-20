@@ -47,7 +47,7 @@ def signup(
     db: DbSession = Depends(get_session),
     existing: models.Session | None = Depends(deps.current_session),
 ) -> dto.SessionOut:
-    """Create an organisation with its first user as owner.
+    """Create an organization with its first user as owner.
 
     If the visitor already has an anonymous trial session, their trial org is
     *promoted* rather than abandoned — otherwise the work they just did would
@@ -71,7 +71,7 @@ def signup(
         )
     ).first()
     if taken:
-        raise HTTPException(status_code=409, detail="That email already exists in this organisation.")
+        raise HTTPException(status_code=409, detail="That email already exists in this organization.")
 
     user = models.User(
         org_id=org.id,
@@ -104,10 +104,10 @@ def login(
 ) -> dto.SessionOut:
     """Password login.
 
-    Email is unique *per organisation*, not globally, because the same person
+    Email is unique *per organization*, not globally, because the same person
     legitimately belongs to more than one tenant. So a login may match several
     accounts; we verify the password against each candidate and, if more than
-    one matches, ask which organisation rather than guessing.
+    one matches, ask which organization rather than guessing.
     """
     candidates = list(db.scalars(
         select(models.User).where(models.User.email == body.email)
@@ -128,7 +128,7 @@ def login(
         raise HTTPException(
             status_code=409,
             detail={
-                "message": "This email belongs to more than one organisation.",
+                "message": "This email belongs to more than one organization.",
                 "choose_org_id": [
                     dto.OrgChoice(id=o.id, name=o.name).model_dump(mode="json")
                     for o in orgs if o
@@ -156,7 +156,7 @@ def start_trial(
 ) -> dto.SessionOut:
     """Begin an anonymous trial.
 
-    The visitor gets a real, expiring organisation. That keeps tenancy to one
+    The visitor gets a real, expiring organization. That keeps tenancy to one
     code path — no nullable org_id, no "is this a trial?" branch in every query
     — and a trial is reaped by deleting its org, which cascades.
     """

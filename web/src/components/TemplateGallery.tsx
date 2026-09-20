@@ -37,7 +37,7 @@ export function TemplateGallery({ onCreated, onClose }: Props) {
   return (
     <Panel
       title="Start from a template"
-      description="Copied into your organisation, then yours to edit."
+      description="Copied into your organization, then yours to edit."
       actions={
         <Button type="button" variant="quiet" onClick={onClose}>
           Close

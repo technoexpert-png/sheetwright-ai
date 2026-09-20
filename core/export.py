@@ -1,4 +1,4 @@
-"""Serialise normalized rows into the files a customer downloads.
+"""Serialize normalized rows into the files a customer downloads.
 
 Export is deliberately *data only*. Diagnostics, warnings and the mapped/empty
 distinction are an API concern: they belong in the review UI, where someone can

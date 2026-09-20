@@ -7,7 +7,7 @@
                     │  cookie session (httpOnly, signed, server-side row)
                     ▼
         ┌───────────────────────┐
-        │  FastAPI  (api/)      │   thin: validate, resolve tenant, serialise
+        │  FastAPI  (api/)      │   thin: validate, resolve tenant, serialize
         │  ├─ routes_auth       │
         │  ├─ routes_schemas    │
         │  └─ routes_uploads    │

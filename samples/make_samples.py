@@ -48,7 +48,7 @@ XLSX_PATH = SAMPLES_DIR / "sample_b_roster.xlsx"
 # FILE A -- sample_a_contacts.csv
 # ---------------------------------------------------------------------------
 # Failure modes exercised: junk preamble above the header, non-standard but
-# recognisable header names, one unmappable column, one genuinely ambiguous
+# recognizable header names, one unmappable column, one genuinely ambiguous
 # column, and dirty values (missing/malformed email, four phone formats, a
 # fully blank line mid-file, untrimmed whitespace, "LAST, First" name order).
 

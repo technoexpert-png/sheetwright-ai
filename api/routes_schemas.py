@@ -38,7 +38,7 @@ def list_schemas(scope: TenantScope = Depends(deps.current_scope)) -> list[dto.S
 
 @router.get("/templates")
 def list_templates() -> dict:
-    """The catalogue, readable without a session — it is marketing copy, not data."""
+    """The catalog, readable without a session — it is marketing copy, not data."""
     return {
         key: {"name": spec["name"], "description": spec["description"],
               "fields": spec["fields"]}

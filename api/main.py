@@ -1,6 +1,6 @@
 """Sheetwright AI — application entrypoint.
 
-Routes stay thin: they validate input, resolve a tenant scope, and serialise.
+Routes stay thin: they validate input, resolve a tenant scope, and serialize.
 Parsing, mapping, and normalization live in `core/`, and background work in
 `worker/`, so the interesting logic is testable without HTTP.
 """

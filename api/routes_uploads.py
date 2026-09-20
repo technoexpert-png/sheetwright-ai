@@ -34,7 +34,7 @@ def _now() -> datetime:
 
 
 def _upload_out(db: DbSession, u: models.Upload) -> dto.UploadOut:
-    """Serialise an upload, with diagnostic counts and row count if finished."""
+    """Serialize an upload, with diagnostic counts and row count if finished."""
     result_id = db.scalar(
         select(models.Result.id).where(models.Result.upload_id == u.id)
         .order_by(models.Result.revision.desc()).limit(1)
@@ -90,7 +90,7 @@ async def create_upload(
     it explicitly.
     """
     # Validate the file BEFORE creating anything. Rejecting a PDF after having
-    # created an organisation for it leaves an orphan tenant behind.
+    # created an organization for it leaves an orphan tenant behind.
     filename = file.filename or "upload"
     ext = "." + filename.rsplit(".", 1)[-1].lower() if "." in filename else ""
     if ext not in ALLOWED_EXTENSIONS:
@@ -133,7 +133,7 @@ async def create_upload(
         if schema_row is None:
             raise HTTPException(
                 status_code=409,
-                detail="This organisation has no target schemas yet.",
+                detail="This organization has no target schemas yet.",
             )
     else:
         schema_row = scope.get(models.TargetSchema, schema_id)

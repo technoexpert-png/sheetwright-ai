@@ -28,7 +28,7 @@ export function SchemaDetailsPanel({
           placeholder="Customer contacts"
           disabled={disabled}
           error={nameError}
-          hint="Unique within your organisation."
+          hint="Unique within your organization."
           onChange={(event) => onChange({ name: event.target.value })}
         />
         <div>

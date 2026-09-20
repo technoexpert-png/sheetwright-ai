@@ -1,6 +1,6 @@
 """Target-schema authoring: create, edit, reorder, delete.
 
-The behaviour worth protecting here is what happens to *existing work* when a
+The behavior worth protecting here is what happens to *existing work* when a
 definition changes. A schema is not just configuration — uploads were
 converted against it, and those results must stay readable.
 """

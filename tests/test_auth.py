@@ -142,5 +142,5 @@ class TestUnauthenticated:
         assert client.get("/api/schemas").status_code == 401
 
     def test_templates_are_public(self, client):
-        """The catalogue is marketing copy, not tenant data."""
+        """The catalog is marketing copy, not tenant data."""
         assert client.get("/api/schemas/templates").status_code == 200

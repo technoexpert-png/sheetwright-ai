@@ -83,7 +83,7 @@ def _clean_value(value: Any) -> str | None:
     if value is None:
         return None
     # bool before the numeric branch: bool subclasses int, so True would
-    # otherwise serialise as "1" and lose its meaning.
+    # otherwise serialize as "1" and lose its meaning.
     if isinstance(value, bool):
         return "true" if value else "false"
     if isinstance(value, datetime):

@@ -34,7 +34,7 @@ Four ready-made templates are included:
 | Template | What it is for |
 |---|---|
 | Contacts | People you can reach. The most common import shape. |
-| Products | A product or SKU catalogue. |
+| Products | A product or SKU catalog. |
 | Transactions | Dated financial movements - ledger or statement exports. |
 | Inventory | Stock on hand by location. |
 

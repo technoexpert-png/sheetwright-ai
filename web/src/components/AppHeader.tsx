@@ -40,7 +40,7 @@ export function AppHeader() {
         <div className="ml-auto flex items-center gap-3">
           {/* A trial org's name is a placeholder ("Trial"), so showing it in the
               header is noise rather than information — the trial notice on the
-              upload screen already says what matters. A real organisation's
+              upload screen already says what matters. A real organization's
               name is worth showing, because it tells you which tenant you are
               acting in. */}
           {org && !org.is_trial && (

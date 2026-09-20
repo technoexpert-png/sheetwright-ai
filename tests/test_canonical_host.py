@@ -3,7 +3,7 @@
 sheetwrightai.com is served by the same Fly app as www.sheetwrightai.com and
 sheetwright-ai.fly.dev. Without a canonical redirect all three serve identical
 pages, which splits links and looks unfinished. The redirect is deliberately
-narrow, and these tests pin the narrowness as much as the behaviour.
+narrow, and these tests pin the narrowness as much as the behavior.
 """
 
 from __future__ import annotations

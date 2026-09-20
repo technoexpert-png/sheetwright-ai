@@ -2,7 +2,7 @@
 
 Templates are *copied* into an org at signup rather than referenced globally.
 A customer editing "Contacts" must not change it for anyone else, and a shared
-row would make that the default behaviour.
+row would make that the default behavior.
 
 Field descriptions carry real weight: they are the main signal the column
 mapper reasons over. "Work email, not personal" resolves ambiguity that a field
@@ -37,14 +37,14 @@ SCHEMA_TEMPLATES: dict[str, TemplateSpec] = {
             {"name": "email", "field_type": "email", "required": True,
              "description": "Primary email address for this person."},
             {"name": "company", "field_type": "string", "required": False,
-             "description": "Employer or organisation name, not a job title."},
+             "description": "Employer or organization name, not a job title."},
             {"name": "phone", "field_type": "phone", "required": False,
              "description": "Contact phone number in any format."},
         ],
     },
     "products": {
         "name": "Products",
-        "description": "A product or SKU catalogue.",
+        "description": "A product or SKU catalog.",
         "fields": [
             {"name": "sku", "field_type": "string", "required": True,
              "description": "Unique product or stock-keeping identifier."},

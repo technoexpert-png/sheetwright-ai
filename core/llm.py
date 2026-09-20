@@ -182,7 +182,7 @@ def _is_abbrev(token: str, term: str) -> bool:
 
     Spreadsheet headers abbreviate by dropping interior letters, not just by
     truncating, so a prefix test alone misses most of them. Any same-initial
-    subsequence counts (which subsumes prefixes like 'Org' -> organisation);
+    subsequence counts (which subsumes prefixes like 'Org' -> organization);
     3+ chars are required because short tokens are a subsequence of far too
     much to be evidence.
     """

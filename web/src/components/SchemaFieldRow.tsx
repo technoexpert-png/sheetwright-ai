@@ -138,7 +138,7 @@ export function SchemaFieldRow({
 
       {/* The description carries more weight than anything else on this row —
           it is what the mapper reasons over — so it gets the accent rule and
-          an example rather than sitting in the row as a grey afterthought. */}
+          an example rather than sitting in the row as a gray afterthought. */}
       <div className="mt-3 border-l-2 border-l-accent bg-accent-wash/60 p-2.5">
         <label htmlFor={descriptionId} className="block text-xs font-semibold text-ink">
           Description{" "}

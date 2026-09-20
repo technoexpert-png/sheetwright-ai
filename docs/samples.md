@@ -17,7 +17,7 @@ Contact,E-mail Addr,Org,Cell #,Notes,Secondary Contact
 | Exercises | Correct handling |
 |---|---|
 | Two junk preamble lines above the header | Scored and skipped; `preamble_skipped` note |
-| Non-standard but recognisable headers | `Cell #` → `phone` from **content**, not the header name |
+| Non-standard but recognizable headers | `Cell #` → `phone` from **content**, not the header name |
 | `Notes` — free text, unmappable | Reported as `unmapped_source_column`, not forced into a field |
 | `Secondary Contact` — names in some rows, phones in others | Genuinely ambiguous: appears as an *alternative* with a confidence, never a confident guess |
 | A blank required email vs. `jane.doe@@example` | **Different** diagnostics — `missing_required_value` vs `value_needs_review` |
@@ -50,6 +50,6 @@ Region | '  full name ' | EMAIL | Employer | Telephone | Joined | Email
 
 ## Why these, specifically
 
-Every behaviour above is covered by a named test. The two files are the
+Every behavior above is covered by a named test. The two files are the
 fixtures for `tests/test_uploads.py`, so the claims in this table are executable
 rather than aspirational.

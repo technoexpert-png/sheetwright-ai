@@ -164,7 +164,7 @@ class TestConversion:
         assert len(body["rows"]) == 9
 
     def test_mapped_and_empty_are_distinguishable_over_http(self, session):
-        """The core product distinction must survive serialisation."""
+        """The core product distinction must survive serialization."""
         client, schemas = session
         up = upload_file(client, schemas["Contacts"]["id"],
                          SAMPLES / "sample_a_contacts.csv").json()

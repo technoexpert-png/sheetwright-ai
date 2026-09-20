@@ -97,7 +97,7 @@ export function UploadPage() {
 
           {schemaList.data && schemaList.data.length === 0 && (
             <EmptyState title="No schemas available yet">
-              There is nothing to map onto until this organisation has a target schema.{" "}
+              There is nothing to map onto until this organization has a target schema.{" "}
               <Link to="/schemas/new" className="text-accent underline">
                 Create one
               </Link>{" "}
